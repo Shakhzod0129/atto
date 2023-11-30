@@ -1,6 +1,7 @@
 package uz.code.controller;
 
 import uz.code.db.DataBase;
+import uz.code.enums.CardStatus;
 import uz.code.enums.UserRole;
 import uz.code.model.Card;
 import uz.code.model.Profile;
@@ -12,6 +13,7 @@ import uz.code.service.TerminalService;
 import uz.code.service.TransactionService;
 import uz.code.utils.ScannerUtils;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Controller {
@@ -146,7 +148,7 @@ public class Controller {
                 case 1-> createCard();
                 case 2-> cardService.list();
                 case 3-> updateCard();
-                case 4-> cardChangeStatus();
+                case 4-> cardChangeStatusByAdmin();
                 case 5-> deleteCard();
                 case 0-> {
                     return;
@@ -160,11 +162,26 @@ public class Controller {
 
     private static void updateCard() {
         System.out.println("update card by admin");
+        String oldNumber = scanner.nextLine("Enter the number of card to update : ");
+        String newNumber = scanner.nextLine("Enter a new  unique number to update : ");
+        String newExpDate = scanner.nextLine("Enter a new expiry date : [ yyyy-MM-dd]");
+
+        cardService.update(oldNumber,newNumber,newExpDate);
+
 
     }
 
     private static void createCard() {
         System.out.println("Create card by admin");
+
+        String number = scanner.nextLine("Enter unique number for new card : ");
+        String expDate = scanner.nextLine("Enter expiry date : [ yyyy-MM-dd]");
+
+        card.setNumber(number);
+        card.setExpDate(LocalDate.parse(expDate));
+
+        cardService.create(card);
+
     }
 
     private static void userMenu() {
@@ -215,7 +232,7 @@ public class Controller {
                 case 1-> createCard();
                 case 2-> cardService.list();
                 case 3-> updateCard();
-                case 4-> cardChangeStatus();
+                case 4-> cardChangeStatusByAdmin();
                 case 5-> deleteCard();
                 case 0-> {
                     return;
@@ -232,11 +249,33 @@ public class Controller {
     }
 
     private static void deleteCard() {
-        System.out.println("delete card");
+        String number = scanner.nextLine("Enter the number of the card to delete card");
+
+        cardService.delete(number);
     }
 
-    private static void cardChangeStatus() {
-        System.out.println("change status");
+    private static void cardChangeStatusByAdmin() {
+        String number = scanner.nextLine("Enter the number of card to edit status");
+
+        System.out.println("""
+                1.ACTIVE
+                2.BLOCKED
+                0.EXIT""");
+        String option = scanner.nextLine("Choose option : ");
+        CardStatus status = null;
+
+        switch (option) {
+            case "1" -> status = CardStatus.ACTIVE;
+            case "2" -> status = CardStatus.BLOCKED;
+            case "0" -> {
+                return;
+            }
+            default -> System.out.println("You have chosen wrong option❌");
+        }
+
+
+        cardService.changeStatus(number,status);
+
     }
 
     private static void addCard() {
