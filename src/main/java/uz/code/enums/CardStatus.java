@@ -1,5 +1,5 @@
 package uz.code.enums;
 
 public enum CardStatus {
-    ACTIVE,BLOCKED
+    ACTIVE,BLOCKED,INACTIVE
 }

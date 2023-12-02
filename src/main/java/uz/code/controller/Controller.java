@@ -18,41 +18,38 @@ import java.util.Scanner;
 
 public class Controller {
 
-    static ScannerUtils scanner=new ScannerUtils();
-    static CardService cardService=new CardService();
-   static ProfileService profileService=new ProfileService();
-   static TerminalService terminalService=new TerminalService();
-   static TransactionService transactionService=new TransactionService();
+    static ScannerUtils scanner = new ScannerUtils();
+    static Scanner s=new Scanner(System.in);
+    static CardService cardService = new CardService();
+    static ProfileService profileService = new ProfileService();
+    static TerminalService terminalService = new TerminalService();
+    static TransactionService transactionService = new TransactionService();
 
-   static Profile profile=new Profile();
-   static Card card=new Card();
-   static Terminal terminal=new Terminal();
-   static Transaction transaction=new Transaction();
+    static Profile profile = new Profile();
+    static Card card = new Card();
+    static Terminal terminal = new Terminal();
+    static Transaction transaction = new Transaction();
 
 
-    public static void start(){
+    public static void start() {
 
-        DataBase dataBase=new DataBase();
+        DataBase dataBase = new DataBase();
         dataBase.createUserTable();
         dataBase.createCardTable();
         dataBase.createTerminalTable();
         dataBase.createTransactionTable();
-        int n;
+        int n = 0;
 
-        while (true){
+        while (true) {
 
             menu();
-            n=getAction();
-            switch (n){
-            case 1-> login();
-            case 2-> signUp();
+                n = getAction();
+                switch (n) {
+                    case 1 -> login();
+                    case 2 -> signUp();
+                    default -> System.out.println("You have chose wrong option❌");
+                }
             }
-
-
-
-        }
-
-
     }
 
     private static void signUp() {
@@ -77,12 +74,13 @@ public class Controller {
 
         boolean login = profileService.login(phone, password);
 
-        if(login){
+        if (login) {
             for (Profile profile1 : profileService.list()) {
-                if(profile1.getPhone().equals(phone)&&profile1.getPassword().equals(password)){
-                    if(profile1.getRole().equals(UserRole.USER)){
+                if (profile1.getPhone().equals(phone) && profile1.getPassword().equals(password)) {
+                    profile.setPhone(phone);
+                    if (profile1.getRole().equals(UserRole.USER)) {
                         userMenu();
-                    }else {
+                    } else {
                         adminMenu();
                     }
                 }
@@ -95,21 +93,21 @@ public class Controller {
 
     private static void adminMenu() {
         int n;
-        while (true){
+        while (true) {
             System.out.println("""
                     1.Card.
                     2.Terminal.
                     3.Profile.
                     4.Transaction.
                     0.Exit.""");
-            n=getAction();
+            n = getAction();
 
-            switch (n){
-                case 1-> cardMenuForAdmin();
-                case 2-> terminalMenu();
-                case 3-> profileMenu();
-                case 4-> transactionMenu();
-                case 0-> {
+            switch (n) {
+                case 1 -> cardMenuForAdmin();
+                case 2 -> terminalMenu();
+                case 3 -> profileMenu();
+                case 4 -> transactionMenu();
+                case 0 -> {
                     return;
                 }
                 default -> System.out.println("Choose the right option!");
@@ -133,7 +131,7 @@ public class Controller {
 
     private static void cardMenuForAdmin() {
         int n;
-        while (true){
+        while (true) {
             System.out.println("""
                     ========================
                     1.Create Card.
@@ -142,15 +140,15 @@ public class Controller {
                     4.Change Card Status.
                     5.Delete Card.
                     0.Exit.\n""");
-            n=getAction();
+            n = getAction();
 
-            switch (n){
-                case 1-> createCard();
-                case 2-> cardService.list();
-                case 3-> updateCard();
-                case 4-> cardChangeStatusByAdmin();
-                case 5-> deleteCard();
-                case 0-> {
+            switch (n) {
+                case 1 -> createCard();
+                case 2 -> cardService.list();
+                case 3 -> updateCard();
+                case 4 -> cardChangeStatusByAdmin();
+                case 5 -> deleteCard();
+                case 0 -> {
                     return;
 
                 }
@@ -166,7 +164,7 @@ public class Controller {
         String newNumber = scanner.nextLine("Enter a new  unique number to update : ");
         String newExpDate = scanner.nextLine("Enter a new expiry date : [ yyyy-MM-dd]");
 
-        cardService.update(oldNumber,newNumber,newExpDate);
+        cardService.update(oldNumber, newNumber, newExpDate);
 
 
     }
@@ -187,21 +185,21 @@ public class Controller {
     private static void userMenu() {
 
         int n;
-        while (true){
+        while (true) {
             System.out.println("""
                     1.My Card
                     2.ReFill.
                     3.Transactions
                     4.Make Payment
                     0.Exit.""");
-            n=getAction();
+            n = getAction();
 
-            switch (n){
-                case 1-> cardMenuForUser();
-                case 2-> reFill();
-                case 3-> transactionService.transactions();
-                case 4-> makePayment();
-                case 0->{
+            switch (n) {
+                case 1 -> cardMenuForUser();
+                case 2 -> reFill();
+                case 3 -> transactionService.transactions();
+                case 4 -> makePayment();
+                case 0 -> {
                     return;
                 }
                 default -> System.out.println("Choose the right option!");
@@ -217,7 +215,7 @@ public class Controller {
 
     private static void cardMenuForUser() {
         int n;
-        while (true){
+        while (true) {
             System.out.println("""
                     ========================
                     1.Add Card.
@@ -226,15 +224,14 @@ public class Controller {
                     4.Delete Card.
                     0.Exit.\n""");
 
-            n=getAction();
+            n = getAction();
 
-            switch (n){
-                case 1-> createCard();
-                case 2-> cardService.list();
-                case 3-> updateCard();
-                case 4-> cardChangeStatusByAdmin();
-                case 5-> deleteCard();
-                case 0-> {
+            switch (n) {
+                case 1 -> addCard();
+                case 2 -> listOfUser();
+                case 3 -> cardChangeStatusByUser();
+                case 4 -> deleteCard();
+                case 0 -> {
                     return;
                 }
                 default -> System.out.println("Choose the right option!");
@@ -244,8 +241,43 @@ public class Controller {
         }
     }
 
+    private static void cardChangeStatusByUser() {
+        String number = scanner.nextLine("Enter the number of card to edit status");
+
+        System.out.println("""
+                1.ACTIVE
+                2.INACTIVE
+                0.EXIT""");
+        String option = scanner.nextLine("Choose option : ");
+        CardStatus status = null;
+
+        switch (option) {
+            case "1" -> status = CardStatus.ACTIVE;
+            case "2" -> status = CardStatus.INACTIVE;
+            case "0" -> {
+                return;
+            }
+            default -> System.out.println("You have chosen wrong option❌");
+        }
+
+
+        cardService.changeStatusByUser(number, status);
+    }
+
+    private static void listOfUser() {
+
+        cardService.listOfUser(profile);
+    }
+
     private static void reFill() {
-        System.out.println("refill");
+        String number = scanner.nextLine("Enter the number of card to edit status : ");
+        System.out.println("Enter amount of money : ");
+        double summa=s.nextDouble();
+
+
+        cardService.fillBalance(profile,number,summa);
+
+
     }
 
     private static void deleteCard() {
@@ -259,14 +291,16 @@ public class Controller {
 
         System.out.println("""
                 1.ACTIVE
-                2.BLOCKED
+                2.INACTIVE
+                3.BLOCKED
                 0.EXIT""");
         String option = scanner.nextLine("Choose option : ");
         CardStatus status = null;
 
         switch (option) {
             case "1" -> status = CardStatus.ACTIVE;
-            case "2" -> status = CardStatus.BLOCKED;
+            case "2" -> status = CardStatus.INACTIVE;
+            case "3" -> status = CardStatus.BLOCKED;
             case "0" -> {
                 return;
             }
@@ -274,12 +308,17 @@ public class Controller {
         }
 
 
-        cardService.changeStatus(number,status);
+        cardService.changeStatus(number, status);
 
     }
 
     private static void addCard() {
-        System.out.println("add card");
+        String number = scanner.nextLine("Please! Enter your card number : ");
+
+
+//        card.setPhone(profile.getPhone());
+        cardService.addCardForUser(profile, number);
+
     }
 
     private static void menu() {

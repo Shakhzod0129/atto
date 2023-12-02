@@ -136,4 +136,35 @@ public class CardRepository {
         }
 
     }
+
+    public boolean addCardForUser(Profile profile, String number) {
+        try {
+            Connection connection = DataBase.getConnection();// <2>
+            Statement statement = connection.createStatement(); // <3>
+//            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
+            String sql = "update card set phone = '"+profile.getPhone()+"' where number = '"+number+"'";
+//            String sql = "update card set phone = '%s' where number = '%s'";
+//            sql = String.format(sql, profile.getPhone(),number);
+            int effectedRows = statement.executeUpdate(sql); // <4>
+            connection.close();
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean fillBalance(Profile profile, String number, double summa) {
+        try {
+            Connection connection = DataBase.getConnection();// <2>
+            Statement statement = connection.createStatement(); // <3>
+//            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
+            String sql = "update card set balance=balance +"+summa+" where number = '%s' and phone='%s'";
+            sql = String.format(sql,number,profile.getPhone());
+            int effectedRows = statement.executeUpdate(sql); // <4>
+            connection.close();
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

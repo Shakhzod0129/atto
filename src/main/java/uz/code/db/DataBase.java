@@ -54,13 +54,11 @@ public class DataBase {
                     create table if not exists card(
                     number varchar (16) primary key,
                     exp_date Date ,
-                    balance double precision,
+                    balance double precision default(0),
                     status varchar default 'ACTIVE',
-                    phone varchar (13),
-                    created_date timestamp default now(),
-                    CONSTRAINT fk_profile
-                          FOREIGN KEY(phone)
-                    	  REFERENCES profile(phone)
+                    phone varchar  REFERENCES profile(phone) ,
+                    created_date timestamp default now()
+                    	 
                     );""";
 
             statement.executeUpdate(sql);

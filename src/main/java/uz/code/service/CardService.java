@@ -2,6 +2,7 @@ package uz.code.service;
 
 import uz.code.enums.CardStatus;
 import uz.code.model.Card;
+import uz.code.model.Profile;
 import uz.code.repository.CardRepository;
 
 import java.time.LocalDate;
@@ -100,6 +101,67 @@ public class CardService {
             System.out.println("Card has deleted successfully✅");
         }else {
             System.out.println("Card has not found with this number❌");
+        }
+
+    }
+
+    public void addCardForUser(Profile profile,String number) {
+        List<Card> cardList = cardRepository.getAll(CardStatus.ACTIVE);
+
+        boolean  bool=false;
+        for (Card card : cardList) {
+            if(card.getNumber().equals(number)){
+//                card.setPhone(profile.getPhone());
+               bool= cardRepository.addCardForUser(profile,number);
+            }
+        }
+
+        if(bool){
+            System.out.println("suucess");
+        }else {
+            System.out.println("error");
+        }
+    }
+
+    public void listOfUser(Profile profile) {
+        List<Card> cardList = cardRepository.getAll();
+        for (Card card : cardList) {
+            if(profile.getPhone().equals(card.getPhone())){
+                System.out.println(card);
+            }
+        }
+    }
+
+    public void changeStatusByUser(String number, CardStatus status) {
+        List<Card> cardList = cardRepository.getAll();
+
+        for (Card card : cardList) {
+            if (card.getNumber().equals(number)) {
+                if (status.equals(card.getStatus())) {
+                    System.out.println("This card is already "+card.getStatus()+" ❌");
+                } else {
+                    cardRepository.updateStatus(card, number, status);
+                    System.out.println("Card is "+status+"✅");
+                }
+            }
+        }
+
+    }
+
+    public void fillBalance(Profile profile,String number, double summa) {
+        List<Card> cardList = cardRepository.getAll();
+        boolean bool=false;
+        for (Card card : cardList) {
+            if(card.getPhone().equals(profile.getPhone())){
+                card.setBalance(card.getBalance()+summa);
+              bool=  cardRepository.fillBalance(profile,number,summa);
+            }
+        }
+
+        if(bool){
+            System.out.println("Card balance has filled successfully✅");
+        }else {
+            System.out.println("Failed❌");
         }
 
     }
