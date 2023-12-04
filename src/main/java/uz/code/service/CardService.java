@@ -4,6 +4,7 @@ import uz.code.enums.CardStatus;
 import uz.code.model.Card;
 import uz.code.model.Profile;
 import uz.code.repository.CardRepository;
+import uz.code.repository.TransactionRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,13 +12,15 @@ import java.util.List;
 public class CardService {
 
     CardRepository cardRepository=new CardRepository();
+    TransactionRepository transactionRepository=new TransactionRepository();
+    static boolean bool=false;
 
     public void create(Card card) {
 
         if(card.getExpDate().isBefore(LocalDate.now())){
             System.out.println("You have entered an incorrect date");
         }else {
-            card.setStatus(CardStatus.ACTIVE);
+            card.setStatus(CardStatus.INACTIVE);
             boolean result=cardRepository.create(card);
 
             if(result){
@@ -30,7 +33,7 @@ public class CardService {
 
     public List<Card> getList() {
 
-        List<Card> cardList = cardRepository.getAll(CardStatus.ACTIVE);
+        List<Card> cardList = cardRepository.getAll();
 
 
         return cardList;
@@ -52,7 +55,7 @@ public class CardService {
 
     public void update(String oldNumber, String newNumber, String newExpDate) {
 
-        List<Card> cardList = cardRepository.getAll(CardStatus.ACTIVE);
+        List<Card> cardList = cardRepository.getAll();
 
         boolean bool = false;
         for (Card card : cardList) {
@@ -81,10 +84,17 @@ public class CardService {
                 if (status.equals(card.getStatus())) {
                     System.out.println("This card is already "+card.getStatus()+" ❌");
                 } else {
-                    cardRepository.updateStatus(card, number, status);
+                     bool = cardRepository.updateStatus(card, number, status);
                     System.out.println("Card is "+status+"✅");
+                    break;
                 }
             }
+        }
+
+        if(bool){
+            System.out.println("Card status has changed ✅");
+        }else {
+            System.out.println("Error❌");
         }
     }
 
@@ -106,13 +116,14 @@ public class CardService {
     }
 
     public void addCardForUser(Profile profile,String number) {
-        List<Card> cardList = cardRepository.getAll(CardStatus.ACTIVE);
+        List<Card> cardList = cardRepository.getAll();
 
         boolean  bool=false;
         for (Card card : cardList) {
             if(card.getNumber().equals(number)){
-//                card.setPhone(profile.getPhone());
-               bool= cardRepository.addCardForUser(profile,number);
+                card.setPhone(profile.getPhone());
+                card.setStatus(CardStatus.ACTIVE);
+               bool= cardRepository.addCardForUser(card,profile,number);
             }
         }
 
@@ -123,7 +134,7 @@ public class CardService {
         }
     }
 
-    public void listOfUser(Profile profile) {
+    public void listOfUserCard(Profile profile) {
         List<Card> cardList = cardRepository.getAll();
         for (Card card : cardList) {
             if(profile.getPhone().equals(card.getPhone())){
@@ -132,37 +143,42 @@ public class CardService {
         }
     }
 
-    public void changeStatusByUser(String number, CardStatus status) {
+
+    public void changeStatusByUser(Profile profile, String number, CardStatus status) {
         List<Card> cardList = cardRepository.getAll();
 
         for (Card card : cardList) {
-            if (card.getNumber().equals(number)) {
-                if (status.equals(card.getStatus())) {
-                    System.out.println("This card is already "+card.getStatus()+" ❌");
-                } else {
-                    cardRepository.updateStatus(card, number, status);
-                    System.out.println("Card is "+status+"✅");
+            if(card.getPhone()!=null){
+                if (card.getNumber().equals(number)) {
+                    if(card.getPhone().equals(profile.getPhone())){
+                        if (status.equals(card.getStatus())) {
+                            System.out.println("This card is already "+card.getStatus()+" ❌");
+                        } else {
+                            cardRepository.updateStatus(card, number, status);
+                            System.out.println("Card is "+status+"✅");
+                        }
+                    }else {
+                        System.out.println("Card has not found❌");
+                        break;
+                    }
+
                 }
             }
+
         }
+
+
 
     }
 
-    public void fillBalance(Profile profile,String number, double summa) {
+
+    public void balanceCompanyCard() {
         List<Card> cardList = cardRepository.getAll();
-        boolean bool=false;
+
         for (Card card : cardList) {
-            if(card.getPhone().equals(profile.getPhone())){
-                card.setBalance(card.getBalance()+summa);
-              bool=  cardRepository.fillBalance(profile,number,summa);
+            if(card.getNumber().equals("1")){
+                System.out.println("Balance of Company Card : "+card.getBalance()+"💵💵💵");
             }
         }
-
-        if(bool){
-            System.out.println("Card balance has filled successfully✅");
-        }else {
-            System.out.println("Failed❌");
-        }
-
     }
 }

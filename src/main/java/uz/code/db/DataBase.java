@@ -1,9 +1,9 @@
 package uz.code.db;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import uz.code.model.Card;
+import uz.code.model.Profile;
+
+import java.sql.*;
 
 public class DataBase {
 
@@ -18,6 +18,29 @@ public class DataBase {
         }
     }
 
+    public static boolean createProfile(Profile profile) {
+        try {
+            Connection con = DataBase.getConnection();
+            String sql = "insert into profile(phone,name,surname,password,status,role) values(?,?,?,?,?,?)";
+
+            PreparedStatement preparedStatement = con.prepareStatement(sql); // <3>
+
+           preparedStatement.setString(1,profile.getPhone());
+           preparedStatement.setString(2,profile.getName());
+           preparedStatement.setString(3,profile.getSurname());
+           preparedStatement.setString(4,profile.getPassword());
+           preparedStatement.setString(5, String.valueOf(profile.getStatus()));
+           preparedStatement.setString(6, String.valueOf(profile.getRole()));
+
+            int effectedRows = preparedStatement.executeUpdate(); // <4>
+            con.close();
+            return effectedRows == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public void createUserTable(){
 
         Connection connection=DataBase.getConnection();
@@ -26,7 +49,8 @@ public class DataBase {
 
             String sql= """
                     create table if not exists profile(
-                    phone varchar primary key,
+                    id serial primary key,
+                    phone varchar unique,
                     name varchar not null,
                     surname varchar not null,
                     password varchar not null,
@@ -52,12 +76,14 @@ public class DataBase {
 
             String sql= """
                     create table if not exists card(
-                    number varchar (16) primary key,
+                    id serial primary key,
+                    number varchar (16) unique,
                     exp_date Date ,
                     balance double precision default(0),
                     status varchar default 'ACTIVE',
                     phone varchar  REFERENCES profile(phone) ,
-                    created_date timestamp default now()
+                    created_date timestamp default now(),
+                    visible boolean default true
                     	 
                     );""";
 
@@ -79,7 +105,8 @@ public class DataBase {
 
             String sql= """
                     create table if not exists terminal(
-                    code varchar  primary key,
+                    id serial primary key,
+                    code varchar  unique,
                     address varchar (30) not null,
                     status varchar default 'ACTIVE',
                     created_date timestamp default now()
@@ -101,19 +128,46 @@ public class DataBase {
             Statement statement = connection.createStatement();
 
             String sql= """
-                    create table if not exists card(
+                    create table if not exists transaction(
                     id serial  primary key,
                     card_number varchar not null ,
                     amount double precision,
+                    type varchar,
                     terminal_code varchar,
                     created_date timestamp default now(),
-                    FOREIGN KEY(card_number) REFERENCES card(number),
+                    CONSTRAINT fk_card
+                    FOREIGN KEY(card_number) REFERENCES card(number)
+                    ON UPDATE SET NULL,
+                    CONSTRAINT fk_terminal
                     FOREIGN KEY(terminal_code) REFERENCES terminal(code)
+                    ON UPDATE SET NULL
+                    
                     );""";
 
             statement.executeUpdate(sql);
             connection.close();
 
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static boolean create(Profile profile, Card card) {
+        try {
+            Connection con = DataBase.getConnection();
+            String sql = "insert into card(number,exp_date,status,phone) values(?,?,?,?)";
+
+            PreparedStatement preparedStatement = con.prepareStatement(sql); // <3>
+
+            preparedStatement.setString(1,card.getNumber());
+            preparedStatement.setDate(2, Date.valueOf(card.getExpDate()));
+            preparedStatement.setString(3, String.valueOf(card.getStatus()));
+            preparedStatement.setString(4, profile.getPhone());
+
+            int effectedRows = preparedStatement.executeUpdate(); // <4>
+            con.close();
+            return effectedRows == 1;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

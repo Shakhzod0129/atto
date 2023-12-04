@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @ToString
 @Timestamp
 public class Terminal {
+    private String code;
     private String address;
     private TerminalStatus status;
     private LocalDateTime createdDate;

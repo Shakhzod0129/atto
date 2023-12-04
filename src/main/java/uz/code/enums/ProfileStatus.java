@@ -1,5 +1,5 @@
 package uz.code.enums;
 
 public enum ProfileStatus {
-    ACTIVE, INACTIVE
+    ACTIVE, INACTIVE,BLOCKED
 }

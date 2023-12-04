@@ -2,13 +2,12 @@ package uz.code.repository;
 
 import uz.code.db.DataBase;
 import uz.code.enums.CardStatus;
-import uz.code.enums.ProfileStatus;
-import uz.code.enums.UserRole;
 import uz.code.model.Card;
 import uz.code.model.Profile;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -111,8 +110,8 @@ public class CardRepository {
             Connection connection = DataBase.getConnection();// <2>
             Statement statement = connection.createStatement(); // <3>
 //            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
-            String sql = "update card set number = '%s', status ='%s' where number = '%s'";
-            sql = String.format(sql, card.getNumber(), status,number);
+            String sql = "update card set status ='%s' where number = '%s'";
+            sql = String.format(sql, status,card.getNumber());
             int effectedRows = statement.executeUpdate(sql); // <4>
             connection.close();
             return true;
@@ -127,7 +126,7 @@ public class CardRepository {
             Statement statement = connection.createStatement(); // <3>
 //            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
             String sql = "update card set number = '%s', status ='BLOCKED' where number = '%s'";
-            sql = String.format(sql, card.getNumber(),number);
+            sql = String.format(sql, card.getNumber(),card.getNumber());
             int effectedRows = statement.executeUpdate(sql); // <4>
             connection.close();
             return true;
@@ -137,12 +136,12 @@ public class CardRepository {
 
     }
 
-    public boolean addCardForUser(Profile profile, String number) {
+    public boolean addCardForUser(Card card, Profile profile, String number) {
         try {
             Connection connection = DataBase.getConnection();// <2>
             Statement statement = connection.createStatement(); // <3>
 //            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
-            String sql = "update card set phone = '"+profile.getPhone()+"' where number = '"+number+"'";
+            String sql = "update card set phone = '"+profile.getPhone()+"' where number = '"+card.getNumber()+"'";
 //            String sql = "update card set phone = '%s' where number = '%s'";
 //            sql = String.format(sql, profile.getPhone(),number);
             int effectedRows = statement.executeUpdate(sql); // <4>
@@ -158,7 +157,7 @@ public class CardRepository {
             Connection connection = DataBase.getConnection();// <2>
             Statement statement = connection.createStatement(); // <3>
 //            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
-            String sql = "update card set balance=balance +"+summa+" where number = '%s' and phone='%s'";
+            String sql = "update card set balance="+summa+" where number = '%s' and phone='%s'";
             sql = String.format(sql,number,profile.getPhone());
             int effectedRows = statement.executeUpdate(sql); // <4>
             connection.close();
@@ -166,5 +165,77 @@ public class CardRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean payFromCardToCard(Card card, String number, double summa) {
+        try {
+            Connection connection = DataBase.getConnection();// <2>
+            Statement statement = connection.createStatement(); // <3>
+//            String sql = "update student set name = '"+dto.getName()+"', surname ='"+dto.getSurname()+"' where id = "+id;
+            String sql = "update card set balance = '"+card.getBalance()+"' where number = '"+number+"'";
+            String sql2 = "update card set balance =balance+ "+summa+" where number = '"+5555+"'";
+//            String sql = "update card set phone = '%s' where number = '%s'";
+//            sql = String.format(sql, profile.getPhone(),number);
+            int effectedRows = statement.executeUpdate(sql); // <4>
+            int effectedRows2 = statement.executeUpdate(sql2); // <4>
+            connection.close();
+            return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Card getCardByNumber(String number) {
+        try {
+            Connection connection = DataBase.getConnection();
+            String sql = "select * from card where visible = true and number = '" + number + "';";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                Integer cardId = resultSet.getInt("id");
+                String cardNumber = resultSet.getString("number");
+                Double balance = resultSet.getDouble("balance");
+                LocalDate expDate = resultSet.getDate("exp_date").toLocalDate();
+                String status = resultSet.getString("status");
+                String phone = resultSet.getString("phone");
+                LocalDateTime createdDate = resultSet.getTimestamp("created_date").toLocalDateTime();
+
+                Card card = new Card();
+                
+                card.setNumber(cardNumber);
+                card.setBalance(balance);
+                card.setExpDate(expDate);
+                card.setStatus(CardStatus.valueOf(status));
+                card.setPhone(phone);
+                card.setCreatedDate(createdDate);
+                return card;
+            }
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        }
+        return null;
+    }
+
+    public int save(Card card) {
+        Connection connection = DataBase.getConnection();
+        try {
+            String sql = "insert into card (number, exp_date,balance,status,phone,created_date) " + " values ('%s','%s','%s','%s','%s','%s')";
+            sql = String.format(sql, card.getNumber(), card.getExpDate(), card.getBalance(), card.getStatus().name(), card.getPhone(), card.getCreatedDate());
+
+            Statement statement = connection.createStatement();
+            return statement.executeUpdate(sql);
+
+        } catch (SQLException sqlException) {
+            sqlException.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return 0;
     }
 }

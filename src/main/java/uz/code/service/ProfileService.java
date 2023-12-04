@@ -9,6 +9,7 @@ import java.util.List;
 
 public class ProfileService {
     static ProfileRepository profileRepository=new ProfileRepository();
+    static boolean bool=false;
     public void create(Profile profile) {
 
         profile.setStatus(ProfileStatus.ACTIVE);
@@ -28,12 +29,22 @@ public class ProfileService {
 
     public boolean login(String phone, String password) {
 
-        List<Profile> all = profileRepository.getAll(ProfileStatus.ACTIVE);
+        List<Profile> all = profileRepository.getAll();
 
         for (Profile profile : all) {
             if(profile.getPhone().equals(phone)&&profile.getPassword().equals(password)){
-                System.out.println("Welcome to your account✅ : "+profile.getName()+" "+profile.getSurname());
-                return true;
+                if(profile.getStatus().equals(ProfileStatus.ACTIVE)){
+                    System.out.println("Welcome to your account✅ : "+profile.getName()+" "+profile.getSurname());
+                    return true;
+                }else if(profile.getStatus().equals(ProfileStatus.INACTIVE)) {
+                    System.out.println("Your account is INACTIVE❌");
+                    return false;
+                }else {
+                    System.out.println("Your account is BLOCKED❌");
+                    return false;
+
+                }
+
             }
         }
         System.out.println("This account has not found❌");
@@ -41,9 +52,31 @@ public class ProfileService {
     }
 
 
-    public List<Profile> list() {
-        List<Profile> profileList=profileRepository.getAll(ProfileStatus.ACTIVE);
+    public List<Profile> getList() {
+        List<Profile> profileList=profileRepository.getAll();
 
        return profileList;
+    }
+
+    public void listOfUser(){
+        List<Profile> profileList=profileRepository.getAll();
+        for (Profile profile : profileList) {
+            System.out.println(profile);
+        }
+    }
+
+    public void changeStatus(String number, ProfileStatus status) {
+        List<Profile> profileList=profileRepository.getAll();
+
+        for (Profile profile : profileList) {
+            if(profile.getPhone().equals(number)){
+              bool=  profileRepository.changeStatus(profile.getPhone(),status);
+            }
+        }
+        if(bool){
+            System.out.println("Success✅");
+        }else {
+            System.out.println("Error❌");
+        }
     }
 }
