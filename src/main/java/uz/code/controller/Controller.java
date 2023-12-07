@@ -51,6 +51,9 @@ public class Controller {
             switch (n) {
                     case 1 -> authControlller.authenticationLogin();
                     case 2 -> authControlller.authenticationSignUp();
+                    case 0 -> {
+                    return;
+                }
                     default -> System.out.println("You have chose wrong option❌");
                 }
             }

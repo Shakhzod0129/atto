@@ -166,17 +166,13 @@ public class CardService {
             }
 
         }
-
-
-
     }
-
 
     public void balanceCompanyCard() {
         List<Card> cardList = cardRepository.getAll();
 
         for (Card card : cardList) {
-            if(card.getNumber().equals("1")){
+            if(card.getNumber().equals("5555")){
                 System.out.println("Balance of Company Card : "+card.getBalance()+"💵💵💵");
             }
         }
